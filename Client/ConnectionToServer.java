@@ -17,25 +17,13 @@ public class ConnectionToServer implements Runnable {
 
     boolean keepReceiving;
     
-    public ConnectionToServer(String id, JLabel messageLabel){
-        try {
-            socket = new Socket("localhost", 1234); //Try sending a request to the server
-            this.messageLabel = messageLabel;       //If that succeeded, then set our references
-            this.id = id;                           //
-            this.keepReceiving = true;              //We will be receiving
-        } catch (IOException io){
-            System.out.println("[Connection To Server] Couldn't establish a connection to the server. Exiting");
-            JOptionPane.showMessageDialog(null, "Error connecting to the server. Exiting.");    //Show message dialog if there was a problem, and exit the program.
-            System.exit(0);
-        }
+    public ConnectionToServer(Socket socket) throws IOException {
+        talker = new Talker(socket); //Create talker
+        
 
-        try {
-            talker = new Talker(socket, id);
-        } catch (IOException io){
-            JOptionPane.showMessageDialog(null, "Error connecting to the server. The program will exit!");  //Show message dialog if there was a problem, and exit the program.
-            System.exit(0);
-        }
+    }
 
+    public void startThread(){
         new Thread(this).start();
     }
 
