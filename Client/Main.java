@@ -3,18 +3,23 @@ package Client;
 import java.io.*;
 import java.net.*;
 
+import javax.swing.JOptionPane;
+
 public class Main {
     public static void main(String[] args){
         try {
-            System.out.println("Connecting to server...");
-            Socket socket = new Socket("localhost", 1234);
+            System.out.println("Connecting to server...");  
+            Socket socket = new Socket("localhost", 1234);  //Will throw an IOException if connection is unsuccessful
 
-            ConnectionToServer
-            //If the connection is good
+            ConnectionToServer cts = new ConnectionToServer(socket);    //Will throw an IOException if connection is unsuccessful
+
+            //If there is a successful connection.
             System.out.println("Connected to server... starting client");
-            StartupDialog startupDialog = new StartupDialog(cts);i
-        } catch (IOException io){
+            StartupDialog startupDialog = new StartupDialog(cts);
 
+        } catch (IOException io){
+            JOptionPane.showMessageDialog(null, "Error connecting to server. Exiting.", "Error!", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
     }
 }

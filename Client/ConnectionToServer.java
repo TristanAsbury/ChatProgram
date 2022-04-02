@@ -11,16 +11,13 @@ import javax.swing.SwingUtilities;
 
 public class ConnectionToServer implements Runnable {
     private Talker talker;
-    private Socket socket;
     private JLabel messageLabel;
-    private String id;
+    private String id;  //This is the ID of the user (username)
 
     boolean keepReceiving;
     
     public ConnectionToServer(Socket socket) throws IOException {
         talker = new Talker(socket); //Create talker
-        
-
     }
 
     public void startThread(){
@@ -47,7 +44,6 @@ public class ConnectionToServer implements Runnable {
             talker.send(msg);
         } catch (IOException io){
             JOptionPane.showMessageDialog(null, "Error sending message to server. The program will exit!"); //Show message dialog if there was a problem, and exit the program.
-            System.exit(0);
         }
     }
 

@@ -12,19 +12,8 @@ public class ConnectionToClient implements Runnable {
     private String id;
     private boolean receiving;
 
-    public ConnectionToClient(Socket socket, Vector<ConnectionToClient> ctcs){
-        try {
-            talker = new Talker(socket);
-            id = talker.receive();  //Receives the first message which will be the id from the client
-            System.out.println("[Connection To Client] Client id is: " + id);
-
-            this.ctcs = ctcs;       //Set our reference to the set of CTCS to the one we passed
-        } catch (IOException io){
-            System.out.println("Problem connecting to client...");
-        }
-
-        receiving = true;           //Set receiving to true.
-        new Thread(this).start();   //Start the separate thread
+    public ConnectionToClient(Socket socket, Server server){
+        
     }
 
     public void run(){
@@ -36,7 +25,7 @@ public class ConnectionToClient implements Runnable {
     private void receive(){
         try{
             String msg = talker.receive();  //Receive the text
-            broadcast(msg);
+            handleMessage(msg);
             System.out.println("[CTC " + id + "] Received: " + msg);
         } catch (IOException io){
             System.out.println("[CTC " + id + "] Problem receiving message from client.");
@@ -45,13 +34,11 @@ public class ConnectionToClient implements Runnable {
         }
     }
 
-    private void broadcast(String msg){
-        for(ConnectionToClient ctc : ctcs){ //Use a for each loop
-            if(ctc != this){                //If the ctc we are looking at isn't us
-                ctc.send(id + ": " + msg);  //Send the message to that ctc
-            }
-        }
+    private void handleMessage(String msg){
+        //if ...
     }
+
+    
 
     //Wrapper method
     private void send(String msg){
