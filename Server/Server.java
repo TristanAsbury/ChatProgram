@@ -29,7 +29,8 @@ public class Server {
             DataOutputStream bos = new DataOutputStream(fos);
             users = new UserTable();    //Start new user table.
         }
-        
+
+        orphanConnections = new Vector<ConnectionToClient>();
     }
 
     public void startAcceptingConnections(){
@@ -38,15 +39,17 @@ public class Server {
             try {
                 Socket tmpSocket = servSocket.accept();    //Waits until a client sends a connection request
                 System.out.println("Accepted connection...");
-
-                ConnectionToClient tmpCTC = new ConnectionToClient(tmpSocket, this);
-
+                ConnectionToClient tmpCTC = new ConnectionToClient(tmpSocket, this, orphanConnections);
                 orphanConnections.add(tmpCTC);
-
             } catch (IOException io){
                 System.out.println("Couldn't connect to client");
             }
         }
+    }
+
+    public void addUser(String username, String password, ConnectionToClient ctc){
+        User newUser = new User(username, password, ctc);
+        users.put(username, newUser);
     }
 
     public boolean userExists(String username){
@@ -57,14 +60,14 @@ public class Server {
         return userExists;
     }
 
-    public boolean loginSuccess(String username, String password){
-        boolean loginSuccessful = false;
+    public boolean loginExists(String username, String password){
+        boolean loginExistent = false;
         User tmpUser = users.get(username);
         if(tmpUser != null){            // If the hashtable returns a user object
             if(tmpUser.password.equals(password)){  // If the passwords match
-                loginSuccessful = true; // Return login success
+                loginExistent = true;   // Return login success
             }
         }
-        return loginSuccessful;
+        return loginExistent;
     }
 }

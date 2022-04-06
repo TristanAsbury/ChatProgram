@@ -12,13 +12,23 @@ public class ConnectionToClient implements Runnable {
     private String id;
     private boolean receiving;
     private boolean loggedIn;
+    private Server server;
 
-    public ConnectionToClient(Socket socket, Server server){
+    public ConnectionToClient(Socket socket, Server server, Vector<ConnectionToClient> ctcs){
+        this.server = server;
+        this.receiving = true;
+        this.ctcs = ctcs;
+        
+        try {
+            this.talker = new Talker(socket);
+        } catch (IOException io){
+            ctcs.remove(this);
+            receiving = false;
+        }
+        
         loggedIn = false;
         new Thread(this).start();
     }
-
-
 
     public void run(){
         while(receiving){
@@ -29,8 +39,8 @@ public class ConnectionToClient implements Runnable {
     private void receive(){
         try{
             String msg = talker.receive();  //Receive the text
-            handleMessage(msg);
             System.out.println("[CTC " + id + "] Received: " + msg);
+            handleMessage(msg);
         } catch (IOException io){
             System.out.println("[CTC " + id + "] Problem receiving message from client.");
             receiving = false;  //Stop trying to receive messages
@@ -41,7 +51,19 @@ public class ConnectionToClient implements Runnable {
     private void handleMessage(String msg){
         if(msg.equals("USER_REGISTER")){
             System.out.println("User registering");
-            
+            try {
+                String username = talker.receive();
+                String password = talker.receive();
+
+                if(!server.userExists(username)){   //If the user doesn't exist, we're good
+                    server.addUser(username, password, this);
+                    send("REGISTER_SUCCESS");
+                } else { //If the user does exist, however, then we must send a message back and wait
+                    send("REGISTER_ERROR_UE");  //Sends register error "user exists"
+                }
+            } catch (IOException io){
+                System.out.println("Error getting user credentials.");
+            }
         }
     }
 

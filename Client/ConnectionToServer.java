@@ -1,13 +1,11 @@
 package Client;
 
 //package Client;
-
 import java.io.*;
 import java.net.*;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 public class ConnectionToServer implements Runnable {
     private Talker talker;
@@ -25,8 +23,6 @@ public class ConnectionToServer implements Runnable {
     }
 
     public void run(){
-        send(id);   //Sends the id to the server
-
         while(keepReceiving){
             try {
                 String msg = talker.receive();
@@ -47,13 +43,16 @@ public class ConnectionToServer implements Runnable {
         }
     }
 
+    public String receive(){
+        String retString = null;
+        try {
+            retString = talker.receive();
+        } catch (IOException io){
+
+        }
+        return retString;
+    }
+
     private void handleMessage(String msg){
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                messageLabel.setText(msg);
-            }
-        });
     }
 }

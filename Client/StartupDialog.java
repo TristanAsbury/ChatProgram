@@ -109,6 +109,17 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
             cts.send("USER_REGISTER");
             cts.send(usernameField.getText());
             cts.send(passwordField.getText());
+
+            if(cts.receive().equals("REGISTER_SUCCESS")){
+                JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE);
+                //Show success
+                
+                //Start the main jframe
+                
+                dispose();
+                //Close this window
+
+            }
         }
     }
 
@@ -118,7 +129,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
         Dimension d = tk.getScreenSize();
         setSize(400, 200);
         setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
-        setTitle("Living Things");
+        setTitle("Login");
         setVisible(true);
     }
 }

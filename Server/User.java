@@ -24,6 +24,13 @@ public class User {
         }
     }
 
+    public User(String username, String password, ConnectionToClient ctc){
+        this.username = username;
+        this.password = password;
+        this.ctc = ctc;
+        this.buddies = new Vector<String>();
+    }
+
     public void store(DataOutputStream dos) throws IOException {
         dos.writeUTF(username);
         dos.writeUTF(password);

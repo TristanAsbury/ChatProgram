@@ -1,7 +1,7 @@
 package Server;
 
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 public class UserTable extends Hashtable<String, User>{
@@ -25,6 +25,10 @@ public class UserTable extends Hashtable<String, User>{
         if(online){
             
         }
+    }
+
+    public void saveTable(DataOutputStream dos){
+        
     }
 
 
