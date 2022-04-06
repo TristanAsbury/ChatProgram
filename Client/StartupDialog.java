@@ -37,16 +37,20 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
         usernameLabel = new JLabel("Username:");
         passwordLabel = new JLabel("Password:");
         usernameField = new JTextField(20);
+        usernameField.getDocument().addDocumentListener(this);
         passwordField = new JTextField(20);
+        usernameField.getDocument().addDocumentListener(this);
 
         loginButton = new JButton("Login");
         loginButton.addActionListener(this);
+        loginButton.setEnabled(false);
 
         //Creat the actual input panel
         inputPanel = new JPanel();
 
         registerButton = new JButton("Register");
         registerButton.addActionListener(this);
+        registerButton.setEnabled(false);
         
         //Create the actual button panel
         buttonPanel = new JPanel();
@@ -83,23 +87,29 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
     public void insertUpdate(DocumentEvent e){
         //If the username or password fields are changed, check if they are valid
         if(e.getDocument() == usernameField.getDocument() || e.getDocument() == passwordField.getDocument()){
-            loginButton.setEnabled(usernameField.getText().trim() != "" && passwordField.getText().trim() != "");
-            registerButton.setEnabled(usernameField.getText().trim() != "" && passwordField.getText().trim() != "");
+            loginButton.setEnabled(!usernameField.getText().contains(" ")
+            && usernameField.getText().trim() != "" && passwordField.getText().trim() != "");
+            registerButton.setEnabled(!usernameField.getText().contains(" "));
         }
     }
 
     public void removeUpdate(DocumentEvent e){ 
         //If the username or password fields are changed, check if they are valid
         if(e.getDocument() == usernameField.getDocument() || e.getDocument() == passwordField.getDocument()){
-            loginButton.setEnabled(usernameField.getText().trim() != "" && passwordField.getText().trim() != "");
-            registerButton.setEnabled(usernameField.getText().trim() != "" && passwordField.getText().trim() != "");
+            loginButton.setEnabled(!usernameField.getText().contains(" ")
+            && usernameField.getText().trim() != "" && passwordField.getText().trim() != "");
+            registerButton.setEnabled(!usernameField.getText().contains(" "));
         }
     }
 
     public void changedUpdate(DocumentEvent e){ }
 
     public void actionPerformed(ActionEvent e){
-        //
+        if(e.getSource() == registerButton){
+            cts.send("USER_REGISTER");
+            cts.send(usernameField.getText());
+            cts.send(passwordField.getText());
+        }
     }
 
     private void setupDialog(){

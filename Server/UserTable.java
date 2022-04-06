@@ -1,11 +1,10 @@
 package Server;
 
 import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Hashtable;
 
-public class UserTable extends Hashtable{
+public class UserTable extends Hashtable<String, User>{
 
     
 
@@ -15,6 +14,16 @@ public class UserTable extends Hashtable{
         
         for(int i = 0; i < numUsers; i++){
             User tmpUser = new User(dis);
+        }
+    }
+
+    public void addUser(String username){
+
+    }
+
+    public void setStatus(String username, boolean online){
+        if(online){
+            
         }
     }
 

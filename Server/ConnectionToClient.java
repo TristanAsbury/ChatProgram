@@ -11,10 +11,14 @@ public class ConnectionToClient implements Runnable {
     private Vector<ConnectionToClient> ctcs;
     private String id;
     private boolean receiving;
+    private boolean loggedIn;
 
     public ConnectionToClient(Socket socket, Server server){
-        
+        loggedIn = false;
+        new Thread(this).start();
     }
+
+
 
     public void run(){
         while(receiving){
@@ -35,10 +39,11 @@ public class ConnectionToClient implements Runnable {
     }
 
     private void handleMessage(String msg){
-        //if ...
+        if(msg.equals("USER_REGISTER")){
+            System.out.println("User registering");
+            
+        }
     }
-
-    
 
     //Wrapper method
     private void send(String msg){
