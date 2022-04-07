@@ -15,7 +15,9 @@ public class Main {
 
             //If there is a successful connection.
             System.out.println("Connected to server... starting client");
-            StartupDialog startupDialog = new StartupDialog(cts);
+            BuddyFrame buddyFrame = new BuddyFrame(cts);
+            StartupDialog startupDialog = new StartupDialog(cts, buddyFrame);
+            
 
         } catch (IOException io){
             JOptionPane.showMessageDialog(null, "Error connecting to server. Exiting.", "Error!", JOptionPane.ERROR_MESSAGE);

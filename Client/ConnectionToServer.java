@@ -11,6 +11,7 @@ public class ConnectionToServer implements Runnable {
     private Talker talker;
     private JLabel messageLabel;
     private String id;  //This is the ID of the user (username)
+    BuddyFrame buddyFrame;
 
     boolean keepReceiving;
     
@@ -34,6 +35,10 @@ public class ConnectionToServer implements Runnable {
         }
     }
 
+    public void setBuddyFrame(BuddyFrame buddyFrame){
+        this.buddyFrame = buddyFrame;
+    }
+
     //Wrapper method
     public void send(String msg){
         try {
@@ -54,5 +59,9 @@ public class ConnectionToServer implements Runnable {
     }
 
     private void handleMessage(String msg){
+        if(msg.startsWith("BUDDY_INCOMING")){
+            String[] parts = msg.split(" ");
+            buddyFrame.addBuddy(new Buddy(parts[1], Boolean.parseBoolean(parts[2])));
+        }
     }
 }

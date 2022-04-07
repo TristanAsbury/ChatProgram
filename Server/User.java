@@ -7,7 +7,7 @@ import java.util.Vector;
 
 public class User {
     
-    ConnectionToClient ctc;
+    public ConnectionToClient ctc;
     boolean online;
     String username;
     String password;
@@ -15,10 +15,11 @@ public class User {
     
     public User(DataInputStream dis) throws IOException {
         buddies = new Vector<String>();
-
+        
         this.username = dis.readUTF();
         this.password = dis.readUTF();
         int buddyCount = dis.readInt();
+        
         for(int i = 0; i < buddyCount; i++){
             buddies.add(dis.readUTF());
         }

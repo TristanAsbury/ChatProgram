@@ -17,16 +17,21 @@ public class Server {
         try {
             System.out.println("Loading userfile...");
 
-            //Try opening a file named "usefile.txt", which contains the user data
-            FileInputStream fis = new FileInputStream("userfile.txt");
+            
+            FileInputStream fis = new FileInputStream("userfile.txt");  //Try opening a file named "usefile.txt", which contains the user data
             DataInputStream dis = new DataInputStream(fis);
             users = new UserTable(dis);
+            dis.close();
+            fis.close();
+
         } catch (IOException io){
             System.out.println("Couldn't find userfile. Creating a new one...");
 
-            //If there was a problem opening the file, this means that there is no user data, so we create the file.
-            FileOutputStream fos = new FileOutputStream("userfile.txt");
-            DataOutputStream bos = new DataOutputStream(fos);
+            
+            FileOutputStream fos = new FileOutputStream("userfile.txt");    //If there was a problem opening the file, this means that there is no user data, so we create the file.
+            DataOutputStream dos = new DataOutputStream(fos);
+            dos.close();
+            fos.close();
             users = new UserTable();    //Start new user table.
         }
 
@@ -47,9 +52,38 @@ public class Server {
         }
     }
 
+    public void sendBuddies(String username){
+        User user = users.get(username);    //User that is receiving the buddy updates
+
+        for(int i = 0; i < user.buddies.size(); i++){       // Go through that users friends
+            User buddy = users.get(user.buddies.get(i));    // Get the user
+            user.ctc.send("BUDDY_INCOMING " + buddy.username + " " + buddy.online); // Will send: "BUDDY_INCOMING bob123 false" meaning bob123 is offline
+        }
+    }
+
     public void addUser(String username, String password, ConnectionToClient ctc){
         User newUser = new User(username, password, ctc);
         users.put(username, newUser);
+
+        System.out.println("Num users: " + users.size());
+
+        //Make sure we save the table
+        try {
+            FileOutputStream fos = new FileOutputStream("userfile.txt");
+            DataOutputStream dos = new DataOutputStream(fos);
+
+            users.saveTable(dos);
+
+            dos.close();
+            fos.close();
+
+        } catch (IOException io){
+            System.out.println("Error saving users...");
+        }
+    }
+
+    public void setUserCTC(String username, ConnectionToClient ctc){
+        users.get(username).ctc = ctc;
     }
 
     public boolean userExists(String username){
@@ -60,7 +94,23 @@ public class Server {
         return userExists;
     }
 
-    public boolean loginExists(String username, String password){
+    public void userStatusChange(String username, boolean online){
+        User person = users.get(username);  //The user whos status is changing
+        person.setOnline(online);   // Set their status
+        
+        if(!online){    //If they go offline, set their CTC to null...
+            person.ctc = null;
+        }
+
+        for(int i = 0; i < person.buddies.size(); i++){ //Go through each one of the buddies
+            User buddy = users.get(person.buddies.get(i));  //Get the current buddy
+            if(buddy.ctc != null){  //Are they online?
+                System.out.println("Sending status to: " + buddy.username); //Send the status if so
+            }
+        }
+    }
+
+    public boolean accountExists(String username, String password){
         boolean loginExistent = false;
         User tmpUser = users.get(username);
         if(tmpUser != null){            // If the hashtable returns a user object

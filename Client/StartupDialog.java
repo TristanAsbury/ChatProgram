@@ -26,8 +26,12 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
     JPanel inputPanel;
     JPanel buttonPanel;
 
-    public StartupDialog(ConnectionToServer cts){
+    BuddyFrame buddyFrame;
+
+    public StartupDialog(ConnectionToServer cts, BuddyFrame buddyFrame){
         this.cts = cts;
+        this.buddyFrame = buddyFrame;
+
         setupUI();
         setupDialog();
     }
@@ -107,18 +111,41 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == registerButton){
             cts.send("USER_REGISTER");
-            cts.send(usernameField.getText());
-            cts.send(passwordField.getText());
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+
+            cts.send(username);
+            cts.send(password);
 
             if(cts.receive().equals("REGISTER_SUCCESS")){
-                JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE);
-                //Show success
+                JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
                 
-                //Start the main jframe
+                buddyFrame.setVisible(true);    //Start the main jframe
+                buddyFrame.setUsername(username);
                 
-                dispose();
-                //Close this window
+                dispose();  //Close this window
+            } else {
+                JOptionPane.showMessageDialog(null, "Login Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }
 
+        if(e.getSource() == loginButton){
+            cts.send("USER_LOGIN");
+            String username = usernameField.getText();
+            String password = passwordField.getText();
+
+            cts.send(username);
+            cts.send(password);
+
+            if(cts.receive().equals("LOGIN_SUCCESS")){
+                JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
+                
+                buddyFrame.setVisible(true);    //Start the main jframe
+                buddyFrame.setUsername(username);
+                
+                dispose();  //Close this window
+            } else {
+                JOptionPane.showMessageDialog(null, "Login Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
