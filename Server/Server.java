@@ -61,6 +61,14 @@ public class Server {
         }
     }
 
+    public void sendToDos(String username){
+        User user = users.get(username);
+
+        for(int i = 0; i < user.toDo.size(); i++){
+            user.ctc.send(user.toDo.elementAt(i));
+        }
+    }
+
     public void sendBuddy(String receiverUser, String requesterUser){
         User receiver = users.get(receiverUser);
         User sender = users.get(requesterUser);
