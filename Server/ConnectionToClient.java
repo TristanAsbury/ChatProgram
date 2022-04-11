@@ -85,6 +85,18 @@ public class ConnectionToClient implements Runnable {
             } catch (IOException io ){
                 System.out.println("Error getting user credentials.");       
             }
+        } else if (msg.startsWith("OUTGOING_BUDDYREQ")){
+            String buddyName = msg.split(" ")[1];
+            System.out.println("Checking to see if user: " + buddyName + " exists...");
+            if(server.userExists(buddyName)){
+                System.out.println("User exists! Sending reqest!");
+                server.sendBuddyRequest(username, buddyName);
+            }
+        } else if(msg.startsWith("BUDDYREQ_ACCEPT")){
+            String senderUser = msg.split(" ")[1];
+            String receiverUser = username;
+
+            server.sendBuddy(receiverUser, senderUser);
         }
     }
 

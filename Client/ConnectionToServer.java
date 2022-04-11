@@ -17,9 +17,11 @@ public class ConnectionToServer implements Runnable {
     
     public ConnectionToServer(Socket socket) throws IOException {
         talker = new Talker(socket); //Create talker
+        this.keepReceiving = false;
     }
 
     public void startThread(){
+        this.keepReceiving = true;
         new Thread(this).start();
     }
 
@@ -62,6 +64,14 @@ public class ConnectionToServer implements Runnable {
         if(msg.startsWith("BUDDY_INCOMING")){
             String[] parts = msg.split(" ");
             buddyFrame.addBuddy(new Buddy(parts[1], Boolean.parseBoolean(parts[2])));
+        } else if(msg.startsWith("INCOMING_BUDDYREQ")){
+            String requestersUsername = msg.split(" ")[1];
+            int option = JOptionPane.showConfirmDialog(null, "Accept " + requestersUsername, "Incoming Buddy Request", JOptionPane.YES_NO_OPTION);
+            if(option == JOptionPane.YES_OPTION){
+                send("BUDDYREQ_ACCEPT " + requestersUsername);
+            } else {
+                send("BUDDYREQ_DENY " + requestersUsername);
+            }
         }
     }
 }

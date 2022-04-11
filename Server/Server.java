@@ -61,6 +61,23 @@ public class Server {
         }
     }
 
+    public void sendBuddy(String receiverUser, String requesterUser){
+        User receiver = users.get(receiverUser);
+        User sender = users.get(requesterUser);
+
+        receiver.buddies.add(sender.username);
+        sender.buddies.add(receiver.username);
+
+        //If the receiver (the one who was sent the request) is online, send him the user
+        if(receiver.ctc != null){
+            receiver.ctc.send("BUDDY_INCOMING " + sender.username + " " + sender.online);
+        }
+
+        if(sender.ctc != null){
+            sender.ctc.send("BUDDY_INCOMING " + receiver.username + " " + receiver.online);
+        }
+    }
+
     public void addUser(String username, String password, ConnectionToClient ctc){
         User newUser = new User(username, password, ctc);
         users.put(username, newUser);
@@ -86,13 +103,7 @@ public class Server {
         users.get(username).ctc = ctc;
     }
 
-    public boolean userExists(String username){
-        boolean userExists = false;
-        if(users.get(username) != null){
-            userExists = true;
-        }
-        return userExists;
-    }
+    
 
     public void userStatusChange(String username, boolean online){
         User person = users.get(username);  //The user whos status is changing
@@ -110,6 +121,14 @@ public class Server {
         }
     }
 
+    public boolean userExists(String username){
+        boolean userExists = false;
+        if(users.get(username) != null){
+            userExists = true;
+        }
+        return userExists;
+    }
+
     public boolean accountExists(String username, String password){
         boolean loginExistent = false;
         User tmpUser = users.get(username);
@@ -119,5 +138,13 @@ public class Server {
             }
         }
         return loginExistent;
+    }
+    
+    public void sendBuddyRequest(String sender, String receiver){
+        if(users.get(receiver).ctc != null){    //If the user is online
+            users.get(receiver).ctc.send("INCOMING_BUDDYREQ " + sender);
+        } else {                                //If the user is offline
+            users.get(receiver).addToDo("INCOMING_BUDDYREQ " + sender);
+        }
     }
 }

@@ -31,7 +31,8 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
     public StartupDialog(ConnectionToServer cts, BuddyFrame buddyFrame){
         this.cts = cts;
         this.buddyFrame = buddyFrame;
-
+        cts.setBuddyFrame(buddyFrame);
+        
         setupUI();
         setupDialog();
     }
@@ -43,7 +44,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
         usernameField = new JTextField(20);
         usernameField.getDocument().addDocumentListener(this);
         passwordField = new JTextField(20);
-        usernameField.getDocument().addDocumentListener(this);
+        passwordField.getDocument().addDocumentListener(this);
 
         loginButton = new JButton("Login");
         loginButton.addActionListener(this);
@@ -122,7 +123,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
                 
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
-                
+                cts.startThread();
                 dispose();  //Close this window
             } else {
                 JOptionPane.showMessageDialog(null, "Login Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
@@ -142,7 +143,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
                 
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
-                
+                cts.startThread();
                 dispose();  //Close this window
             } else {
                 JOptionPane.showMessageDialog(null, "Login Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
