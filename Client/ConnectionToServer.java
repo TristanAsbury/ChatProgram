@@ -6,6 +6,7 @@ import java.net.*;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class ConnectionToServer implements Runnable {
     private Talker talker;
@@ -25,6 +26,10 @@ public class ConnectionToServer implements Runnable {
         new Thread(this).start();
     }
 
+    public void setBuddyFrame(BuddyFrame buddyFrame){
+        this.buddyFrame = buddyFrame;
+    }
+
     public void run(){
         while(keepReceiving){
             try {
@@ -37,9 +42,6 @@ public class ConnectionToServer implements Runnable {
         }
     }
 
-    public void setBuddyFrame(BuddyFrame buddyFrame){
-        this.buddyFrame = buddyFrame;
-    }
 
     //Wrapper method
     public void send(String msg){
@@ -72,6 +74,17 @@ public class ConnectionToServer implements Runnable {
             } else {
                 send("BUDDYREQ_DENY " + requestersUsername);
             }
+        } else if(msg.startsWith("INCOMING_MSG")){
+            String[] parts = msg.split(" ");
+            String buddyUsername = parts[1];
+            String chatMsg = msg.substring(parts[0].length() + parts[1].length() + 1);
+            System.out.println("Chat Message Received: " + chatMsg);
+
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    buddyFrame.sendMessage(buddyUsername, chatMsg);
+                }
+            });
         }
     }
 }

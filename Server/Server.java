@@ -111,8 +111,6 @@ public class Server {
         users.get(username).ctc = ctc;
     }
 
-    
-
     public void userStatusChange(String username, boolean online){
         User person = users.get(username);  //The user whos status is changing
         person.setOnline(online);   // Set their status

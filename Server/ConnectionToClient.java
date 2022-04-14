@@ -48,7 +48,7 @@ public class ConnectionToClient implements Runnable {
         }
     }
 
-    private void handleMessage(String msg){
+    private void handleMessage(String msg) {
         if(msg.equals("USER_REGISTER")){
             System.out.println("User registering");
             try {
@@ -97,6 +97,15 @@ public class ConnectionToClient implements Runnable {
             String receiverUser = username;
 
             server.sendBuddy(receiverUser, senderUser);
+        } else if (msg.startsWith("OUTGOING_MSG")){
+            String[] parts = msg.split(" ");
+            String toUsername = parts[1];
+            String message = msg.substring(parts[0].length() + parts[1].length() + 1);
+            
+            User toUser = server.users.get(toUsername);
+            if(toUser.ctc != null){   //If user is online
+                toUser.ctc.send("INCOMING_MSG " + username + " " + message);
+            }
         }
     }
 
