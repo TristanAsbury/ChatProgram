@@ -19,6 +19,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
     JButton sendButton;
     JTextField inputField;
     JEditorPane chatPane;
+    JScrollPane mainPane;
 
     JPanel inputPanel;
 
@@ -26,6 +27,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
         this.buddyName = buddyName;
         this.cts = cts;
         this.isClosed = false;
+        
 
         sendButton = new JButton("Send");
         sendButton.addActionListener(this);
@@ -38,11 +40,13 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
             "<div>Chatting with: "+ buddyName + "</div>"
         );
 
+        mainPane = new JScrollPane(chatPane);
+
         inputPanel = new JPanel();
         inputPanel.add(inputField);
         inputPanel.add(sendButton);
 
-        add(chatPane, BorderLayout.CENTER);
+        add(mainPane, BorderLayout.CENTER);
         add(inputPanel, BorderLayout.SOUTH);
 
         setupDialog();
@@ -83,9 +87,9 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
         try {
             String htmlText = "";
             if(side == 0){
-                htmlText = "<div><p align=\"left\">" + txt + "</p></div>";
+                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; bottom: 0;\" align=\"left\">" + txt + "</p></div>";
             } else {
-                htmlText = "<div><p align=\"right\">" + txt + "</p></div>";
+                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; bottom: 0;\" align=\"right\">" + txt + "</p></div>";
             }
             doc.insertBeforeEnd(body, htmlText);
             chatPane.setCaretPosition(chatPane.getDocument().getLength());
