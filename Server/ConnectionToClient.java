@@ -11,13 +11,13 @@ public class ConnectionToClient implements Runnable {
     private Vector<ConnectionToClient> ctcs;
     private String username;
     private boolean receiving;
-    private boolean loggedIn;
     private Server server;
 
     public ConnectionToClient(Socket socket, Server server, Vector<ConnectionToClient> ctcs){
         this.server = server;
         this.receiving = true;
         this.ctcs = ctcs;
+        username = "Pending...";
         
         try {
             this.talker = new Talker(socket);
@@ -25,8 +25,7 @@ public class ConnectionToClient implements Runnable {
             ctcs.remove(this);
             receiving = false;
         }
-        
-        loggedIn = false;
+
         new Thread(this).start();
     }
 
@@ -43,6 +42,7 @@ public class ConnectionToClient implements Runnable {
             handleMessage(msg);
         } catch (IOException io){
             System.out.println("[CTC " + username + "] Problem receiving message from client.");
+            server.userStatusChange(username, false);
             receiving = false;  //Stop trying to receive messages
             ctcs.remove(this);  //Remove this ctc from the list of ctcs so the server stops trying to send messages through us!
         }
@@ -57,8 +57,8 @@ public class ConnectionToClient implements Runnable {
 
                 if(!server.userExists(usernameInput)){   //If the user doesn't exist, we're good
                     server.addUser(usernameInput, passwordInput, this);
-                    send("REGISTER_SUCCESS");
                     this.username = usernameInput;
+                    send("REGISTER_SUCCESS");
 
                 } else { //If the user does exist, however, then we must send a message back and wait
                     send("REGISTER_ERROR_UE");  //Sends register error "user exists"
@@ -80,6 +80,7 @@ public class ConnectionToClient implements Runnable {
                     server.setUserCTC(this.username, this); //Set user ctc
                     server.userStatusChange(this.username, true);   //Set user online
                     server.sendBuddies(this.username);
+                    server.sendToDos(this.username);
                 }
                 
             } catch (IOException io ){
@@ -105,6 +106,8 @@ public class ConnectionToClient implements Runnable {
             User toUser = server.users.get(toUsername);
             if(toUser.ctc != null){   //If user is online
                 toUser.ctc.send("INCOMING_MSG " + username + " " + message);
+            } else {
+                toUser.toDo.add("INCOMING_MSG " + username + " " + message);
             }
         }
     }

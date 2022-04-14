@@ -3,7 +3,6 @@ package Client;
 import javax.swing.*;
 import javax.swing.JFrame;
 import javax.swing.JList;
-import javax.swing.event.MouseInputListener;
 
 import java.awt.event.*;
 import java.util.Hashtable;
@@ -38,6 +37,7 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
 
     public void setUsername(String username){
         this.username = username;
+        setTitle("Logged In: " + username);
     }
 
     public void addBuddy(Buddy buddy){
@@ -64,24 +64,24 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
             
             if(buddyIndex >= 0){
                 String buddyName = buddyList.getModel().getElementAt(buddyIndex).username;
-                ChatBox chatBox = buddyChatBoxes.get(buddyName);
+                ChatBox buddyChatBox = buddyChatBoxes.get(buddyName);
                 
-                if(chatBox != null){
-                    chatBox.requestFocus();
-                } else {
-                    ChatBox buddyChatBox = new ChatBox(buddyName, cts);
+                if(buddyChatBox == null || !buddyChatBox.isDisplayable()){
+                    buddyChatBox = new ChatBox(buddyName, cts);
                     buddyChatBoxes.put(buddyName, buddyChatBox);
                 }
+                buddyChatBox.requestFocus();
             }
         }
     }
 
     public void sendMessage(String buddyName, String msg){
         ChatBox buddyChatBox = buddyChatBoxes.get(buddyName);
-        if(buddyChatBox == null){
+        if(buddyChatBox == null || !buddyChatBox.isDisplayable()){
             buddyChatBox = new ChatBox(buddyName, cts);
             buddyChatBoxes.put(buddyName, buddyChatBox);
         }
+        buddyChatBox.requestFocus();
         buddyChatBox.addText(msg, 0);
     }
 
@@ -109,7 +109,7 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
         Dimension d = tk.getScreenSize();
         setSize(300, 700);
         setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
-        setTitle("Logged In: " + username);
+        setTitle("Logged In: waiting...");
         setVisible(false);
     }
 }

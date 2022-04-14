@@ -14,6 +14,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
     String buddyName;
     ConnectionToServer cts;
     String username;
+    boolean isClosed;
 
     JButton sendButton;
     JTextField inputField;
@@ -24,6 +25,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
     public ChatBox(String buddyName, ConnectionToServer cts){
         this.buddyName = buddyName;
         this.cts = cts;
+        this.isClosed = false;
 
         sendButton = new JButton("Send");
         sendButton.addActionListener(this);
@@ -65,6 +67,10 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
 
     }
 
+    public boolean isClosed(){
+        return this.isClosed;
+    }
+
     public void addText(String txt, int side){
         HTMLDocument doc;
         Element html;
@@ -75,19 +81,24 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
         body = html.getElement(1);
 
         try {
-            doc.insertBeforeEnd(body, txt);
+            String htmlText = "";
+            if(side == 0){
+                htmlText = "<div><p align=\"left\">" + txt + "</p></div>";
+            } else {
+                htmlText = "<div><p align=\"right\">" + txt + "</p></div>";
+            }
+            doc.insertBeforeEnd(body, htmlText);
             chatPane.setCaretPosition(chatPane.getDocument().getLength());
         } catch (Exception e){
             System.out.println("Problem adding text to pane!");
         }
-
     }
 
     private void setupDialog(){
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension d = tk.getScreenSize();
-        setSize(400, 200);
+        setSize(600, 400);
         setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
         setTitle(buddyName);
         setVisible(true);

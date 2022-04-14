@@ -42,7 +42,6 @@ public class ConnectionToServer implements Runnable {
         }
     }
 
-
     //Wrapper method
     public void send(String msg){
         try {
@@ -57,15 +56,19 @@ public class ConnectionToServer implements Runnable {
         try {
             retString = talker.receive();
         } catch (IOException io){
-
+            System.out.println("[CTS] Error receiving message");
         }
         return retString;
     }
 
     private void handleMessage(String msg){
+
+            //INCOMING BUDDY
         if(msg.startsWith("BUDDY_INCOMING")){
             String[] parts = msg.split(" ");
             buddyFrame.addBuddy(new Buddy(parts[1], Boolean.parseBoolean(parts[2])));
+        
+            //INCOMING BUDDY REQUEST
         } else if(msg.startsWith("INCOMING_BUDDYREQ")){
             String requestersUsername = msg.split(" ")[1];
             int option = JOptionPane.showConfirmDialog(null, "Accept " + requestersUsername, "Incoming Buddy Request", JOptionPane.YES_NO_OPTION);
@@ -74,6 +77,8 @@ public class ConnectionToServer implements Runnable {
             } else {
                 send("BUDDYREQ_DENY " + requestersUsername);
             }
+
+            //INCOMING MESSAGE
         } else if(msg.startsWith("INCOMING_MSG")){
             String[] parts = msg.split(" ");
             String buddyUsername = parts[1];
@@ -85,6 +90,16 @@ public class ConnectionToServer implements Runnable {
                     buddyFrame.sendMessage(buddyUsername, chatMsg);
                 }
             });
+        } else if(msg.startsWith("BUDDY_STATUS")){
+            String[] parts = msg.split(" ");
+            String username = parts[1];
+            boolean online = Boolean.parseBoolean(parts[2]);
+
+            for(int i = 0; i < buddyFrame.buddyModel.size(); i++){
+                if(buddyFrame.buddyModel.get(i).username.equals(username)){
+                    buddyFrame.buddyModel.set(i, new Buddy(username, online));
+                }
+            }
         }
     }
 }

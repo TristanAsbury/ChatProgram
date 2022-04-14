@@ -57,15 +57,16 @@ public class Server {
 
         for(int i = 0; i < user.buddies.size(); i++){       // Go through that users friends
             User buddy = users.get(user.buddies.get(i));    // Get the user
-            user.ctc.send("BUDDY_INCOMING " + buddy.username + " " + buddy.online); // Will send: "BUDDY_INCOMING bob123 false" meaning bob123 is offline
+            user.ctc.send("BUDDY_INCOMING " + buddy.username + " " + (buddy.ctc != null)); // Will send: "BUDDY_INCOMING bob123 false" meaning bob123 is offline
         }
     }
 
     public void sendToDos(String username){
         User user = users.get(username);
 
-        for(int i = 0; i < user.toDo.size(); i++){
+        for(int i = user.toDo.size() - 1; i >= 0; i--){
             user.ctc.send(user.toDo.elementAt(i));
+            user.toDo.remove(i);
         }
     }
 
@@ -123,6 +124,7 @@ public class Server {
             User buddy = users.get(person.buddies.get(i));  //Get the current buddy
             if(buddy.ctc != null){  //Are they online?
                 System.out.println("Sending status to: " + buddy.username); //Send the status if so
+                buddy.ctc.send("BUDDY_STATUS " + username + " " + online);
             }
         }
     }
