@@ -3,7 +3,6 @@ package Client;
 import javax.swing.*;
 import javax.swing.JFrame;
 import javax.swing.JList;
-
 import java.awt.event.*;
 import java.util.Hashtable;
 import java.awt.*;
@@ -16,6 +15,9 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
     DefaultListModel<Buddy> buddyModel;
     
     JButton addBuddyButton;
+    JButton logoutButton;
+
+    JPanel buttonPanel;
 
     Hashtable<String, ChatBox> buddyChatBoxes;
 
@@ -23,14 +25,21 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
         this.cts = cts;
         this.buddyChatBoxes = new Hashtable<String, ChatBox>();
         
+        buttonPanel = new JPanel();
+
         buddyModel = new DefaultListModel<Buddy>();
         buddyList = new JList<Buddy>(buddyModel);
         buddyList.addMouseListener(this);
 
+        logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(this);
+        buttonPanel.add(logoutButton);
+
         addBuddyButton = new JButton("Add Buddy");
         addBuddyButton.addActionListener(this);
         add(buddyList, BorderLayout.CENTER);
-        add(addBuddyButton, BorderLayout.SOUTH);
+        buttonPanel.add(addBuddyButton);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         setupFrame();
     }
@@ -54,6 +63,10 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
                 //Add buddy
                 cts.send("OUTGOING_BUDDYREQ " + addBuddyName);
             }
+        } else if (e.getSource() == logoutButton){
+            cts.send("LOGOUT");
+            StartupDialog newDialog = new StartupDialog(cts, this);
+            this.setVisible(false);
         }
     }
 

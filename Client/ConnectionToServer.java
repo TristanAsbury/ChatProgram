@@ -14,6 +14,7 @@ public class ConnectionToServer implements Runnable {
     private String id;  //This is the ID of the user (username)
     BuddyFrame buddyFrame;
 
+    Thread currentThread;
     boolean keepReceiving;
     
     public ConnectionToServer(Socket socket) throws IOException {
@@ -24,6 +25,10 @@ public class ConnectionToServer implements Runnable {
     public void startThread(){
         this.keepReceiving = true;
         new Thread(this).start();
+    }
+
+    public void stopThread(){
+        this.keepReceiving = false;
     }
 
     public void setBuddyFrame(BuddyFrame buddyFrame){

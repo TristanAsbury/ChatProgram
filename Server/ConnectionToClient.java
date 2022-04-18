@@ -109,6 +109,8 @@ public class ConnectionToClient implements Runnable {
             } else {
                 toUser.toDo.add("INCOMING_MSG " + username + " " + message);
             }
+        } else if (msg.startsWith("LOGOUT")){
+            server.userStatusChange(username, false);
         }
     }
 

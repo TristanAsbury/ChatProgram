@@ -119,7 +119,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
             cts.send(password);
 
             if(cts.receive().equals("REGISTER_SUCCESS")){
-                JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
+                //JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
                 
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
@@ -139,7 +139,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
             cts.send(password);
 
             if(cts.receive().equals("LOGIN_SUCCESS")){
-                JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
+                //JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
                 
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
