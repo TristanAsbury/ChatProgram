@@ -136,7 +136,7 @@ public class ConnectionToClient implements Runnable {
             User toUser = server.users.get(toUsername);
             if(toUser != null){
                 if(toUser.ctc != null){
-                    toUser.ctc.send("START_FILE_TRANSFER " + username + " " + socket.getInetAddress() + " " + socket.getPort());
+                    toUser.ctc.send("START_FILE_TRANSFER " + username + " " + socket.getInetAddress().toString().substring(1) + " " + 1111);
                 }
             }
         }

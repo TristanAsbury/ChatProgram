@@ -8,7 +8,8 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import javax.swing.*;
@@ -32,6 +33,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
     DropTarget dropTarget;
 
     JPanel inputPanel;
+    boolean sendingFile;
 
     java.util.List<File> files;
     DefaultListModel<String> fileNames;
@@ -41,7 +43,8 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
     public ChatBox(String buddyName, ConnectionToServer cts){
         this.buddyName = buddyName;
         this.cts = cts;
-        this.isClosed = false;
+        isClosed = false;
+        sendingFile = false;
 
         sendButton = new JButton("Send");
         sendButton.addActionListener(this);
@@ -126,13 +129,11 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
 
 
     public void dragEnter(DropTargetDragEvent dtde) {
-        // TODO Auto-generated method stub
         System.out.println("Dragged into!");
     }
 
 
     public void dragOver(DropTargetDragEvent dtde) {
-        // TODO Auto-generated method stub
         System.out.println("Dragged outta!");
     }
 
@@ -177,23 +178,31 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
     }
 
     public void startFileTransfer(String ipAddress, int port){
+        System.out.println("Starting file transfer to " + buddyName + " with address: " + ipAddress + " on port " + port);
         try {
             Socket outSocket = new Socket(ipAddress, port);
             
-            byte[] buffer = new byte[128];
+            byte[] buffer = new byte[128];                              //Create empty buffer;
 
             File file = files.get(0);
 
-            FileInputStream fis = new FileInputStream(files.get(0));
+            InputStream fis = new FileInputStream(files.get(0));
+            OutputStream os = outSocket.getOutputStream();
 
-            long fileSize = file.length();
-            long bytesRead = (long)fis.read(buffer);
+            long totalFileSize = file.length();
+            int numBytesRead = fis.read(buffer);
+            long totalBytesRead = numBytesRead;
+            os.write(buffer, 0, numBytesRead);
 
             do {
-                
-            } while (bytesRead < fileSize);
+                numBytesRead = fis.read(buffer);
+                totalBytesRead += numBytesRead;
+                os.write(buffer, 0, numBytesRead);                //Write to file
+            } while (totalBytesRead < totalFileSize);
 
-            
+            System.out.println("Done sending file");
+            fis.close();
+            os.close();
 
         } catch (IOException io){
 

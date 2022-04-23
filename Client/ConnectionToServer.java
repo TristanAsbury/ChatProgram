@@ -29,7 +29,8 @@ public class ConnectionToServer implements Runnable {
 
     public void startThread(){
         this.keepReceiving = true;
-        new Thread(this).start();
+        currentThread = new Thread(this);
+        currentThread.start();
     }
 
     public void stopThread(){
@@ -121,12 +122,12 @@ public class ConnectionToServer implements Runnable {
             int confirmation = JOptionPane.showConfirmDialog(null, question);
             
             if(confirmation == JOptionPane.YES_OPTION){
+                send("ACCEPTED_FILE_REQUEST " + fromUsername);  //Tell the server we accepted the file send request
                 try {
                     FileTransferServer fts = new FileTransferServer(Long.parseLong(fileLength), fileName);
                 } catch (IOException io){
                     JOptionPane.showMessageDialog(null, "Error receiving file...");
                 }
-                send("ACCEPTED_FILE_REQUEST " + fromUsername);  //Tell the server we accepted the file send request
             } else {
                 send("DENIED_FILE_REQUEST");
             }
@@ -135,7 +136,13 @@ public class ConnectionToServer implements Runnable {
             String toUser = parts[1];
             String ipAddress = parts[2];
             int port = Integer.parseInt(parts[3]);
-            buddyFrame.buddyChatBoxes.get(toUser).startFileTransfer(ipAddress, port);
+            try {
+                Thread.sleep(1000);
+                buddyFrame.buddyChatBoxes.get(toUser).startFileTransfer(ipAddress, port);
+            } catch (InterruptedException ie){
+                System.out.println("Problem sleeping");
+            }
+            
         }
     }
 
