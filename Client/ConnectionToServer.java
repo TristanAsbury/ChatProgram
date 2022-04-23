@@ -22,12 +22,18 @@ public class ConnectionToServer implements Runnable {
         this.keepReceiving = false;
     }
 
+    public ConnectionToServer(Talker talker){
+        this.talker = talker;
+        this.keepReceiving = false;
+    }
+
     public void startThread(){
         this.keepReceiving = true;
         new Thread(this).start();
     }
 
     public void stopThread(){
+        System.out.println("Stopping thread...");
         this.keepReceiving = false;
     }
 
@@ -36,7 +42,7 @@ public class ConnectionToServer implements Runnable {
     }
 
     public void run(){
-        while(keepReceiving){
+        while(this.keepReceiving){
             try {
                 String msg = talker.receive();
                 handleMessage(msg);
@@ -60,6 +66,7 @@ public class ConnectionToServer implements Runnable {
         String retString = null;
         try {
             retString = talker.receive();
+            System.out.println("[CTS] Received " + retString);
         } catch (IOException io){
             System.out.println("[CTS] Error receiving message");
         }
@@ -105,6 +112,34 @@ public class ConnectionToServer implements Runnable {
                     buddyFrame.buddyModel.set(i, new Buddy(username, online));
                 }
             }
+        } else if(msg.startsWith("ASK_FILE_REQUEST")){
+            String[] parts = msg.split(" ");
+            String fromUsername = parts[1];
+            String fileName = parts[2];
+            String fileLength = parts[3];
+            String question = "Accept " + fileName + " from " + fromUsername + "?" + " File size: " + fileLength;
+            int confirmation = JOptionPane.showConfirmDialog(null, question);
+            
+            if(confirmation == JOptionPane.YES_OPTION){
+                try {
+                    FileTransferServer fts = new FileTransferServer(Long.parseLong(fileLength), fileName);
+                } catch (IOException io){
+                    JOptionPane.showMessageDialog(null, "Error receiving file...");
+                }
+                send("ACCEPTED_FILE_REQUEST " + fromUsername);  //Tell the server we accepted the file send request
+            } else {
+                send("DENIED_FILE_REQUEST");
+            }
+        } else if(msg.startsWith("START_FILE_TRANSFER")){
+            String[] parts = msg.split(" ");
+            String toUser = parts[1];
+            String ipAddress = parts[2];
+            int port = Integer.parseInt(parts[3]);
+            buddyFrame.buddyChatBoxes.get(toUser).startFileTransfer(ipAddress, port);
         }
+    }
+
+    public ConnectionToServer getDuplicateCTS(){
+        return new ConnectionToServer(this.talker);
     }
 }

@@ -5,12 +5,20 @@ import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 
 import java.awt.event.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import javax.swing.*;
 import java.awt.Toolkit;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
+import java.awt.dnd.*;
+import java.awt.datatransfer.*;
 
-class ChatBox extends JDialog implements ActionListener, DocumentListener {
+class ChatBox extends JDialog implements ActionListener, DocumentListener, DropTargetListener {
     String buddyName;
     ConnectionToServer cts;
     String username;
@@ -21,13 +29,19 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
     JEditorPane chatPane;
     JScrollPane mainPane;
 
+    DropTarget dropTarget;
+
     JPanel inputPanel;
+
+    java.util.List<File> files;
+    DefaultListModel<String> fileNames;
+
+    
 
     public ChatBox(String buddyName, ConnectionToServer cts){
         this.buddyName = buddyName;
         this.cts = cts;
         this.isClosed = false;
-        
 
         sendButton = new JButton("Send");
         sendButton.addActionListener(this);
@@ -41,6 +55,8 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
         );
 
         mainPane = new JScrollPane(chatPane);
+
+        dropTarget = new DropTarget(chatPane, this);
 
         inputPanel = new JPanel();
         inputPanel.add(inputField);
@@ -107,5 +123,84 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener {
         setTitle(buddyName);
         setVisible(true);
     }
+
+
+    public void dragEnter(DropTargetDragEvent dtde) {
+        // TODO Auto-generated method stub
+        System.out.println("Dragged into!");
+    }
+
+
+    public void dragOver(DropTargetDragEvent dtde) {
+        // TODO Auto-generated method stub
+        System.out.println("Dragged outta!");
+    }
+
+
+    public void dropActionChanged(DropTargetDragEvent dtde) { 
+
+    }
+
+
+    public void dragExit(DropTargetEvent dte) {
+        if(dte.getSource() == dropTarget){
+
+        }
+    }
+
+    public void drop(DropTargetDropEvent dtde) {
+        System.out.println("DROPPED!");
+        files = null;
+        fileNames = new DefaultListModel<String>();
+        Transferable transferableData;
+        
+        transferableData = dtde.getTransferable();
+
+        try {
+            if(transferableData.isDataFlavorSupported(DataFlavor.javaFileListFlavor)){
+                dtde.acceptDrop(DnDConstants.ACTION_COPY);
+                files = (java.util.List<File>)transferableData.getTransferData(DataFlavor.javaFileListFlavor);
+            }
+        }catch(UnsupportedFlavorException uf){
+            System.out.println("Unsupported file");
+        }catch(IOException io){
+            System.out.println("Bad io exception.");
+        }
+
+        if(files.size() > 1){
+            System.out.println("File name: " + files.get(0).getName());
+        } else {
+            //EXAMPLE: FILE_SEND_REQUEST john file.txt 1031261278
+            //Server sees this, redirects to john
+            cts.send("FILE_SEND_REQUEST " + buddyName + " " + files.get(0).getName() + " " + files.get(0).length());
+        }
+    }
+
+    public void startFileTransfer(String ipAddress, int port){
+        try {
+            Socket outSocket = new Socket(ipAddress, port);
+            
+            byte[] buffer = new byte[128];
+
+            File file = files.get(0);
+
+            FileInputStream fis = new FileInputStream(files.get(0));
+
+            long fileSize = file.length();
+            long bytesRead = (long)fis.read(buffer);
+
+            do {
+                
+            } while (bytesRead < fileSize);
+
+            
+
+        } catch (IOException io){
+
+        }
+        
+    }
+
+
 
 }

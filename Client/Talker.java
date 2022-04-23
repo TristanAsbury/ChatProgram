@@ -24,7 +24,7 @@ public class Talker {
 
     public String receive() throws IOException{
         String msg = bis.readLine();
-        System.out.println("[Talker "+id+"] RECEIVED: " + msg);
+        System.out.println("[Talker " + id + "] RECEIVED: " + msg);
         return msg;
     }
 

@@ -5,6 +5,8 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.Socket;
 
 public class StartupDialog extends JDialog implements DocumentListener, ActionListener{
     
@@ -28,13 +30,27 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
 
     BuddyFrame buddyFrame;
 
-    public StartupDialog(ConnectionToServer cts, BuddyFrame buddyFrame){
-        this.cts = cts;
+    public StartupDialog(BuddyFrame buddyFrame) {
+        try {
+            Socket socket = new Socket("localhost", 1234);  //Will throw an IOException if connection is unsuccessful
+            cts = new ConnectionToServer(socket);    //Will throw an IOException if connection is unsuccessful
+        } catch (IOException io) {
+            JOptionPane.showMessageDialog(null, "Error connecting to server... exiting.");
+            System.exit(0);
+        }
+
+        //If there is a successful connection.
+        System.out.println("Connected to server... starting client");
+
         this.buddyFrame = buddyFrame;
         cts.setBuddyFrame(buddyFrame);
         
         setupUI();
         setupDialog();
+    }
+
+    private void eraseNReplaceCTS(ConnectionToServer cts){
+        this.cts = this.cts.getDuplicateCTS();
     }
 
     private void setupUI(){
@@ -111,6 +127,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
 
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == registerButton){
+            eraseNReplaceCTS(cts);
             cts.send("USER_REGISTER");
             String username = usernameField.getText();
             String password = passwordField.getText();
@@ -120,17 +137,16 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
 
             if(cts.receive().equals("REGISTER_SUCCESS")){
                 //JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
-                
+                buddyFrame = new BuddyFrame(cts);
+                cts.setBuddyFrame(buddyFrame);
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
                 cts.startThread();
                 dispose();  //Close this window
             } else {
-                JOptionPane.showMessageDialog(null, "Login Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Registration Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
-        }
-
-        if(e.getSource() == loginButton){
+        } else if(e.getSource() == loginButton){
             cts.send("USER_LOGIN");
             String username = usernameField.getText();
             String password = passwordField.getText();
@@ -138,9 +154,11 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
             cts.send(username);
             cts.send(password);
 
-            if(cts.receive().equals("LOGIN_SUCCESS")){
-                //JOptionPane.showMessageDialog(null, "Login Successful!", "Login Success", JOptionPane.INFORMATION_MESSAGE); //Show success
-                
+            String receivedMsg = cts.receive();
+            System.out.println("RECD: " + receivedMsg);
+            if(receivedMsg.equals("LOGIN_SUCCESS")){
+                buddyFrame = new BuddyFrame(cts);
+                cts.setBuddyFrame(buddyFrame);
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
                 cts.startThread();
@@ -155,6 +173,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension d = tk.getScreenSize();
+        setModal(false);
         setSize(400, 200);
         setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
         setTitle("Login");

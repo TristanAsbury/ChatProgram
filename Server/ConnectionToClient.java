@@ -12,12 +12,14 @@ public class ConnectionToClient implements Runnable {
     private String username;
     private boolean receiving;
     private Server server;
+    private Socket socket;
 
     public ConnectionToClient(Socket socket, Server server, Vector<ConnectionToClient> ctcs){
         this.server = server;
         this.receiving = true;
         this.ctcs = ctcs;
-        username = "Pending...";
+        this.username = "Pending...";
+        this.socket = socket;
         
         try {
             this.talker = new Talker(socket);
@@ -59,7 +61,8 @@ public class ConnectionToClient implements Runnable {
                     server.addUser(usernameInput, passwordInput, this);
                     this.username = usernameInput;
                     send("REGISTER_SUCCESS");
-
+                    server.sendBuddies(this.username);
+                    server.sendToDos(this.username);
                 } else { //If the user does exist, however, then we must send a message back and wait
                     send("REGISTER_ERROR_UE");  //Sends register error "user exists"
                 }
@@ -75,10 +78,10 @@ public class ConnectionToClient implements Runnable {
                 if(!server.accountExists(usernameInput, passwordInput)){
                     send("LOGIN_ERROR");
                 } else {
-                    send("LOGIN_SUCCESS");
                     this.username = usernameInput;  //Set the username so we can use it for later
                     server.setUserCTC(this.username, this); //Set user ctc
                     server.userStatusChange(this.username, true);   //Set user online
+                    send("LOGIN_SUCCESS");
                     server.sendBuddies(this.username);
                     server.sendToDos(this.username);
                 }
@@ -111,6 +114,31 @@ public class ConnectionToClient implements Runnable {
             }
         } else if (msg.startsWith("LOGOUT")){
             server.userStatusChange(username, false);
+        } else if (msg.startsWith("FILE_SEND_REQUEST")){
+            String[] parts = msg.split(" ");
+            String toUsername = parts[1];
+            String fileName = parts[2];
+            String fileLength = parts[3];
+
+            User toUser = server.users.get(toUsername);
+
+            if(toUser != null){
+                if(toUser.ctc != null){ //If user is online
+                    toUser.ctc.send("ASK_FILE_REQUEST " + username + " " + fileName + " " + fileLength);
+                } else {
+                    send("FILE_SEND_ERROR_UO"); //Send error back to user
+                }
+            }
+        } else if(msg.startsWith("ACCEPTED_FILE_REQUEST")){
+            String[] parts = msg.split(" ");
+            String toUsername = parts[1];
+
+            User toUser = server.users.get(toUsername);
+            if(toUser != null){
+                if(toUser.ctc != null){
+                    toUser.ctc.send("START_FILE_TRANSFER " + username + " " + socket.getInetAddress() + " " + socket.getPort());
+                }
+            }
         }
     }
 

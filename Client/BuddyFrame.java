@@ -63,10 +63,11 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
                 //Add buddy
                 cts.send("OUTGOING_BUDDYREQ " + addBuddyName);
             }
-        } else if (e.getSource() == logoutButton){
-            cts.send("LOGOUT");
-            StartupDialog newDialog = new StartupDialog(cts, this);
-            this.setVisible(false);
+        } else if (e.getSource() == logoutButton){                  //If the user pressed log out
+            cts.stopThread();                                       //Stop the cts thread
+            cts.send("LOGOUT");                                //Send LOGOUT from ctc
+            StartupDialog newDialog = new StartupDialog(this); //Create a new Dialog
+            setVisible(false);
         }
     }
 
