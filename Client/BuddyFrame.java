@@ -55,25 +55,34 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
 
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == addBuddyButton){
-            //Creat new add buddy dialog (MAKE YOUR OWN CLASS)
-            String addBuddyName = JOptionPane.showInputDialog(null, "Input Buddy Username: ");
-            if(addBuddyName == null || addBuddyName.trim().equals("") || addBuddyName.equals(username)){
-                //Do nothing
+            boolean goodToAddBuddy = true;
+            String addBuddyName = JOptionPane.showInputDialog(null, "Input Buddy Username: "); //Create new add buddy dialog
+
+            if(addBuddyName == null || addBuddyName.trim().equals("") || addBuddyName.equals(username)){    //If the name is nothing, or our own name, its bad
+                //Dont do anything
             } else {
-                //Add buddy
-                cts.send("OUTGOING_BUDDYREQ " + addBuddyName);
+                for(int i = 0; i < buddyModel.size(); i++){             //Go through all buddies
+                    if(addBuddyName.equals(buddyModel.get(i).username)){ //Is this buddy the buddy we are gonna add
+                        JOptionPane.showMessageDialog(null, "Already a buddy!", "Existing Buddy!", JOptionPane.ERROR_MESSAGE); //If so, error
+                        goodToAddBuddy = false;
+                    }
+                }
+
+                if(goodToAddBuddy){
+                    cts.send("OUTGOING_BUDDYREQ " + addBuddyName);  // Else, add the buddy
+                }
             }
         } else if (e.getSource() == logoutButton){                  //If the user pressed log out
             cts.stopThread();                                       //Stop the cts thread
             cts.send("LOGOUT");                                //Send LOGOUT from ctc
-            StartupDialog newDialog = new StartupDialog(this); //Create a new Dialog
-            setVisible(false);
+            StartupDialog newDialog = new StartupDialog(this);      //Create a new Dialog
+            setVisible(false);                                  //Make the buddy list invisible
         }
     }
 
     public void mouseClicked(MouseEvent e){
-        if(e.getClickCount() == 2){
-            Point mousePos = e.getPoint();
+        if(e.getClickCount() == 2){                         //If the user double clicks a user
+            Point mousePos = e.getPoint();                  //Get position of mouse
             int buddyIndex = buddyList.locationToIndex(mousePos);
             
             if(buddyIndex >= 0){
@@ -99,21 +108,13 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
         buddyChatBox.addText(msg, 0);
     }
 
-    public void mousePressed(MouseEvent e){
+    public void mousePressed(MouseEvent e){ }
 
-    }
+    public void mouseEntered(MouseEvent e){ } 
 
-    public void mouseEntered(MouseEvent e){
+    public void mouseReleased(MouseEvent e){ }
 
-    } 
-
-    public void mouseReleased(MouseEvent e){
-
-    }
-
-    public void mouseExited(MouseEvent e){
-
-    }
+    public void mouseExited(MouseEvent e){  }
 
     
 

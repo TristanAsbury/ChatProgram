@@ -16,6 +16,7 @@ import javax.swing.*;
 import java.awt.Toolkit;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.dnd.*;
 import java.awt.datatransfer.*;
 
@@ -54,7 +55,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
         chatPane.setEditable(false);
         chatPane.setContentType("text/html");
         chatPane.setText(
-            "<div>Chatting with: "+ buddyName + "</div>"
+            "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>"
         );
 
         mainPane = new JScrollPane(chatPane);
@@ -106,9 +107,9 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
         try {
             String htmlText = "";
             if(side == 0){
-                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; bottom: 0;\" align=\"left\">" + txt + "</p></div>";
+                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; font-weight: bold; color: orange;\" align=\"left\">" + txt + "</p></div>";
             } else {
-                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; bottom: 0;\" align=\"right\">" + txt + "</p></div>";
+                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; font-weight: bold; color: blue;\" align=\"right\">" + txt + "</p></div>";
             }
             doc.insertBeforeEnd(body, htmlText);
             chatPane.setCaretPosition(chatPane.getDocument().getLength());
@@ -129,28 +130,24 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
 
 
     public void dragEnter(DropTargetDragEvent dtde) {
-        System.out.println("Dragged into!");
+        chatPane.setBackground(new Color(123,123,123));
     }
-
-
-    public void dragOver(DropTargetDragEvent dtde) {
-        System.out.println("Dragged outta!");
-    }
-
-
-    public void dropActionChanged(DropTargetDragEvent dtde) { 
-
-    }
-
 
     public void dragExit(DropTargetEvent dte) {
-        if(dte.getSource() == dropTarget){
-
-        }
+        chatPane.setBackground(new Color(255, 255, 255));
     }
 
+    public void dragOver(DropTargetDragEvent dtde) { }
+
+
+    public void dropActionChanged(DropTargetDragEvent dtde) { }
+
+
+    
+
     public void drop(DropTargetDropEvent dtde) {
-        System.out.println("DROPPED!");
+        chatPane.setBackground(new Color(255, 255, 255));
+        
         files = null;
         fileNames = new DefaultListModel<String>();
         Transferable transferableData;
@@ -193,7 +190,7 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
             int numBytesRead = fis.read(buffer);
             long totalBytesRead = numBytesRead;
             os.write(buffer, 0, numBytesRead);
-
+            
             do {
                 numBytesRead = fis.read(buffer);
                 totalBytesRead += numBytesRead;
@@ -203,13 +200,9 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
             System.out.println("Done sending file");
             fis.close();
             os.close();
-
+            outSocket.close();
         } catch (IOException io){
 
         }
-        
     }
-
-
-
 }

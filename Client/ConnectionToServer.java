@@ -34,7 +34,6 @@ public class ConnectionToServer implements Runnable {
     }
 
     public void stopThread(){
-        System.out.println("Stopping thread...");
         this.keepReceiving = false;
     }
 
@@ -90,14 +89,12 @@ public class ConnectionToServer implements Runnable {
             } else {
                 send("BUDDYREQ_DENY " + requestersUsername);
             }
-
-            //INCOMING MESSAGE
-        } else if(msg.startsWith("INCOMING_MSG")){
+        } else if(msg.startsWith("BUDDYREQ_ERROR_BNE")) {
+            JOptionPane.showMessageDialog(null, "User doesn't exist...");
+        }else if(msg.startsWith("INCOMING_MSG")){ //INCOMING MESSAGE
             String[] parts = msg.split(" ");
             String buddyUsername = parts[1];
             String chatMsg = msg.substring(parts[0].length() + parts[1].length() + 1);
-            System.out.println("Chat Message Received: " + chatMsg);
-
             SwingUtilities.invokeLater(new Runnable(){
                 public void run(){
                     buddyFrame.sendMessage(buddyUsername, chatMsg);
@@ -129,7 +126,7 @@ public class ConnectionToServer implements Runnable {
                     JOptionPane.showMessageDialog(null, "Error receiving file...");
                 }
             } else {
-                send("DENIED_FILE_REQUEST");
+                send("DENIED_FILE_REQUEST " + fromUsername);
             }
         } else if(msg.startsWith("START_FILE_TRANSFER")){
             String[] parts = msg.split(" ");
@@ -137,12 +134,27 @@ public class ConnectionToServer implements Runnable {
             String ipAddress = parts[2];
             int port = Integer.parseInt(parts[3]);
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1000); //Sleep for a second to wait for the server to start
                 buddyFrame.buddyChatBoxes.get(toUser).startFileTransfer(ipAddress, port);
             } catch (InterruptedException ie){
                 System.out.println("Problem sleeping");
             }
-            
+        }
+
+        else if(msg.startsWith("FILE_SEND_ERROR_UO")){
+            JOptionPane.showMessageDialog(null, "User offline. Cannot send file.");
+        }
+
+        else if(msg.startsWith("FORCE_LOGOUT")){
+            System.exit(0);
+        }
+
+        else if(msg.startsWith("BUDDYREQ_OFFLINE")){
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    JOptionPane.showMessageDialog(null, "User is offline. They will be notified when they log in.");
+                }
+            });
         }
     }
 

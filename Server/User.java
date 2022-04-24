@@ -43,6 +43,7 @@ public class User {
         this.ctc = ctc;
         this.buddies = new Vector<String>();
         this.toDo = new Vector<String>();
+        setOnline(true);
     }
 
     public void store(DataOutputStream dos) throws IOException {

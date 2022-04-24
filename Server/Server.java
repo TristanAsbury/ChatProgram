@@ -2,7 +2,6 @@ package Server;
 
 import java.io.*;
 import java.net.*;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class Server {
@@ -77,6 +76,10 @@ public class Server {
         receiver.buddies.add(sender.username);
         sender.buddies.add(receiver.username);
 
+        System.out.println(receiver.username + " is " + (receiver.online ? " online " : " offline "));
+        System.out.println(sender.username + " is " + (sender.online ? " online " : " offline "));
+        saveUsers();
+
         //If the receiver (the one who was sent the request) is online, send him the user
         if(receiver.ctc != null){
             receiver.ctc.send("BUDDY_INCOMING " + sender.username + " " + sender.online);
@@ -93,7 +96,10 @@ public class Server {
 
         System.out.println("Num users: " + users.size());
 
-        //Make sure we save the table
+        saveUsers();
+    }
+
+    private void saveUsers(){
         try {
             FileOutputStream fos = new FileOutputStream("userfile.txt");
             DataOutputStream dos = new DataOutputStream(fos);
@@ -102,7 +108,6 @@ public class Server {
 
             dos.close();
             fos.close();
-
         } catch (IOException io){
             System.out.println("Error saving users...");
         }
@@ -113,15 +118,15 @@ public class Server {
     }
 
     public void userStatusChange(String username, boolean online){
-        User person = users.get(username);  //The user whos status is changing
-        person.setOnline(online);   // Set their status
+        User user = users.get(username);  //The user whos status is changing
+        user.setOnline(online);   // Set their status
         
         if(!online){    //If they go offline, set their CTC to null...
-            person.ctc = null;
+            user.ctc = null;
         }
 
-        for(int i = 0; i < person.buddies.size(); i++){ //Go through each one of the buddies
-            User buddy = users.get(person.buddies.get(i));  //Get the current buddy
+        for(int i = 0; i < user.buddies.size(); i++){ //Go through each one of the buddies
+            User buddy = users.get(user.buddies.get(i));  //Get the current buddy
             if(buddy.ctc != null){  //Are they online?
                 System.out.println("Sending status to: " + buddy.username); //Send the status if so
                 buddy.ctc.send("BUDDY_STATUS " + username + " " + online);
@@ -149,10 +154,16 @@ public class Server {
     }
     
     public void sendBuddyRequest(String sender, String receiver){
-        if(users.get(receiver).ctc != null){    //If the user is online
-            users.get(receiver).ctc.send("INCOMING_BUDDYREQ " + sender);
+        User senderUser = users.get(sender);
+        User receiverUser = users.get(receiver);
+        
+        if(receiverUser.ctc != null){    //If the user is online
+            receiverUser.ctc.send("INCOMING_BUDDYREQ " + sender);
         } else {                                //If the user is offline
-            users.get(receiver).addToDo("INCOMING_BUDDYREQ " + sender);
+            receiverUser.addToDo("INCOMING_BUDDYREQ " + sender);
+            if(senderUser.ctc != null){
+                senderUser.ctc.send("BUDDYREQ_OFFLINE");
+            }
         }
     }
 }

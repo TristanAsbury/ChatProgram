@@ -20,16 +20,17 @@ public class FileTransferServer implements Runnable {
 
     public FileTransferServer(Long fileSize, String fileName) throws IOException {
         System.out.println("Created file transfer server");
-        fos = new FileOutputStream(new File(fileName));
+        fos = new FileOutputStream(new File("chat_download " + fileName));
         servSock = new ServerSocket(1111);
         new Thread(this).start();
         this.totalFileSize = fileSize;
     }
 
     public void run(){
-        Socket inputSocket = null;
+        Socket inputSocket = new Socket();
+        
         try {
-            System.out.println("Waiting for connection...");
+            inputSocket.setSoTimeout(4000);
             inputSocket = servSock.accept();
             System.out.println("Accepted socket!");
         } catch (IOException io){            
@@ -53,10 +54,10 @@ public class FileTransferServer implements Runnable {
 
             dis.close();
             fos.close();
-
+            servSock.close();
         } catch (IOException io){
             JOptionPane.showMessageDialog(null, "Error receiving file...", "File error.", JOptionPane.ERROR_MESSAGE);
         }
-
+        
     }
 }
