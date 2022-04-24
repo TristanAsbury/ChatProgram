@@ -6,8 +6,6 @@ import java.util.Hashtable;
 
 public class UserTable extends Hashtable<String, User>{
 
-    
-
     //This constructor is for a table that loads from a file, ONLY USED IF A FILE EXISTS
     public UserTable(DataInputStream dis) throws IOException {
         System.out.println("Loading users");
@@ -42,7 +40,6 @@ public class UserTable extends Hashtable<String, User>{
             user.store(dos);
         }
     }
-
 
     //If a file doesn't exist, then use this constructor
     public UserTable(){

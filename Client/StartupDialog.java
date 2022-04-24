@@ -8,7 +8,7 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.net.Socket;
 
-public class StartupDialog extends JDialog implements DocumentListener, ActionListener{
+public class StartupDialog extends JDialog implements DocumentListener, ActionListener, WindowListener{
     
     ConnectionToServer cts;
 
@@ -44,7 +44,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
 
         this.buddyFrame = buddyFrame;
         cts.setBuddyFrame(buddyFrame);
-        
+        addWindowListener(this);
         setupUI();
         setupDialog();
     }
@@ -142,7 +142,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
                 cts.startThread();
-                dispose();  //Close this window
+                setVisible(false);
             } else {
                 JOptionPane.showMessageDialog(null, "Registration Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
@@ -162,7 +162,7 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
                 buddyFrame.setVisible(true);    //Start the main jframe
                 buddyFrame.setUsername(username);
                 cts.startThread();
-                dispose();  //Close this window
+                setVisible(false);
             } else {
                 JOptionPane.showMessageDialog(null, "Login Failed.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
@@ -178,5 +178,18 @@ public class StartupDialog extends JDialog implements DocumentListener, ActionLi
         setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
         setTitle("Login");
         setVisible(true);
+    }
+
+
+    public void windowOpened(WindowEvent e) {}
+    public void windowClosing(WindowEvent e) {}
+    public void windowIconified(WindowEvent e) {}
+    public void windowDeiconified(WindowEvent e) {}
+    public void windowActivated(WindowEvent e) {}
+    public void windowDeactivated(WindowEvent e) {}
+    public void windowClosed(WindowEvent e) {
+        if(e.getSource() == this){
+            System.exit(0);
+        }
     }
 }

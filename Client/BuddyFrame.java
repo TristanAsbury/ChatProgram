@@ -58,10 +58,10 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
             boolean goodToAddBuddy = true;
             String addBuddyName = JOptionPane.showInputDialog(null, "Input Buddy Username: "); //Create new add buddy dialog
 
-            if(addBuddyName == null || addBuddyName.trim().equals("") || addBuddyName.equals(username)){    //If the name is nothing, or our own name, its bad
+            if(addBuddyName == null || addBuddyName.trim().equals("") || addBuddyName.equals(username)){     //If the name is nothing, or our own name, its bad
                 //Dont do anything
             } else {
-                for(int i = 0; i < buddyModel.size(); i++){             //Go through all buddies
+                for(int i = 0; i < buddyModel.size(); i++){              //Go through all buddies
                     if(addBuddyName.equals(buddyModel.get(i).username)){ //Is this buddy the buddy we are gonna add
                         JOptionPane.showMessageDialog(null, "Already a buddy!", "Existing Buddy!", JOptionPane.ERROR_MESSAGE); //If so, error
                         goodToAddBuddy = false;
@@ -76,36 +76,43 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
             cts.stopThread();                                       //Stop the cts thread
             cts.send("LOGOUT");                                //Send LOGOUT from ctc
             StartupDialog newDialog = new StartupDialog(this);      //Create a new Dialog
+
+            for(int i = 0; i < buddyModel.size(); i++){
+                ChatBox buddyChatBox = buddyChatBoxes.get(buddyModel.get(i).username);
+                if(buddyChatBox != null){
+                    buddyChatBox.dispose();
+                }
+            }
             setVisible(false);                                  //Make the buddy list invisible
         }
     }
 
     public void mouseClicked(MouseEvent e){
-        if(e.getClickCount() == 2){                         //If the user double clicks a user
-            Point mousePos = e.getPoint();                  //Get position of mouse
-            int buddyIndex = buddyList.locationToIndex(mousePos);
+        if(e.getClickCount() == 2){                                 //If the user double clicks a user
+            Point mousePos = e.getPoint();                          //Get position of mouse
+            int buddyIndex = buddyList.locationToIndex(mousePos);   //Get the index at the position of the mouse
             
             if(buddyIndex >= 0){
-                String buddyName = buddyList.getModel().getElementAt(buddyIndex).username;
-                ChatBox buddyChatBox = buddyChatBoxes.get(buddyName);
+                String buddyName = buddyList.getModel().getElementAt(buddyIndex).username;  //Get the buddy at the index
+                ChatBox buddyChatBox = buddyChatBoxes.get(buddyName);                       //Get the chatbox for that buddy
                 
-                if(buddyChatBox == null || !buddyChatBox.isDisplayable()){
-                    buddyChatBox = new ChatBox(buddyName, cts);
-                    buddyChatBoxes.put(buddyName, buddyChatBox);
+                if(buddyChatBox == null || !buddyChatBox.isDisplayable()){                  //If that chatbox is null, or is invisible
+                    buddyChatBox = new ChatBox(buddyName, cts);                             //Create a new chatbox
+                    buddyChatBoxes.put(buddyName, buddyChatBox);                            //Assign it to that buddy
                 }
-                buddyChatBox.requestFocus();
+                buddyChatBox.requestFocus();                        //Request the focus
             }
         }
     }
 
-    public void sendMessage(String buddyName, String msg){
-        ChatBox buddyChatBox = buddyChatBoxes.get(buddyName);
-        if(buddyChatBox == null || !buddyChatBox.isDisplayable()){
-            buddyChatBox = new ChatBox(buddyName, cts);
-            buddyChatBoxes.put(buddyName, buddyChatBox);
+    public void receiveMessage(String buddyName, String msg){       //When sending a message
+        ChatBox buddyChatBox = buddyChatBoxes.get(buddyName);       //Get the buddy chatbox
+        if(buddyChatBox == null || !buddyChatBox.isDisplayable()){  //If that box isn't existent
+            buddyChatBox = new ChatBox(buddyName, cts);     //Create a new chatbox
+            buddyChatBoxes.put(buddyName, buddyChatBox);    //Assign the chatbox to a buddy
         }
         buddyChatBox.requestFocus();
-        buddyChatBox.addText(msg, 0);
+        buddyChatBox.addText(buddyName, msg, 0);
     }
 
     public void mousePressed(MouseEvent e){ }
@@ -116,8 +123,6 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
 
     public void mouseExited(MouseEvent e){  }
 
-    
-
     private void setupFrame(){
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Toolkit tk = Toolkit.getDefaultToolkit();
@@ -126,5 +131,6 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
         setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
         setTitle("Logged In: waiting...");
         setVisible(false);
+        setResizable(false);
     }
 }

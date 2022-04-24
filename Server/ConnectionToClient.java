@@ -1,7 +1,5 @@
 package Server;
 
-//package Server;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Vector;
@@ -35,6 +33,10 @@ public class ConnectionToClient implements Runnable {
         while(receiving){
             receive();
         }
+    }
+
+    public void setReceiving(boolean b){
+        this.receiving = b;
     }
 
     private void receive(){
@@ -80,15 +82,17 @@ public class ConnectionToClient implements Runnable {
                     //We must check if the user is already logged in
                     this.username = usernameInput;  //Set the username so we can use it for later
                     User checkUser = server.users.get(this.username);
+
                     if(checkUser.ctc != null){
+                        checkUser.ctc.setReceiving(false);      //Make that ctc stop receiving messages, fixes a few things
                         checkUser.ctc.send("FORCE_LOGOUT"); //Will force the already open client to close
                     }
 
                     server.setUserCTC(this.username, this); //Set user ctc
                     server.userStatusChange(this.username, true);   //Set user online
                     send("LOGIN_SUCCESS");          //Send our login success message to allow the user to create the window
-                    server.sendBuddies(this.username);  //Send the buddies
-                    server.sendToDos(this.username);    //Send all pending messages or whatever else
+                    server.sendBuddies(this.username);   //Send the buddies
+                    server.sendToDos(this.username);     //Send all pending messages or whatever else
                 }
                 
             } catch (IOException io ){

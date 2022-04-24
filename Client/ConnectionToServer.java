@@ -1,6 +1,5 @@
 package Client;
 
-//package Client;
 import java.io.*;
 import java.net.*;
 
@@ -75,59 +74,81 @@ public class ConnectionToServer implements Runnable {
 
     private void handleMessage(String msg){
 
-            //INCOMING BUDDY
-        if(msg.startsWith("BUDDY_INCOMING")){
-            String[] parts = msg.split(" ");
-            buddyFrame.addBuddy(new Buddy(parts[1], Boolean.parseBoolean(parts[2])));
+        if(msg.startsWith("BUDDY_INCOMING")){               //This is called when a user is receiving a buddy
+            String[] parts = msg.split(" ");                //Get the parts
+            buddyFrame.addBuddy(new Buddy(parts[1], Boolean.parseBoolean(parts[2])));   //Add buddy to the buddyModel
         
-            //INCOMING BUDDY REQUEST
-        } else if(msg.startsWith("INCOMING_BUDDYREQ")){
-            String requestersUsername = msg.split(" ")[1];
-            int option = JOptionPane.showConfirmDialog(null, "Accept " + requestersUsername, "Incoming Buddy Request", JOptionPane.YES_NO_OPTION);
-            if(option == JOptionPane.YES_OPTION){
-                send("BUDDYREQ_ACCEPT " + requestersUsername);
-            } else {
-                send("BUDDYREQ_DENY " + requestersUsername);
-            }
-        } else if(msg.startsWith("BUDDYREQ_ERROR_BNE")) {
-            JOptionPane.showMessageDialog(null, "User doesn't exist...");
-        }else if(msg.startsWith("INCOMING_MSG")){ //INCOMING MESSAGE
-            String[] parts = msg.split(" ");
-            String buddyUsername = parts[1];
-            String chatMsg = msg.substring(parts[0].length() + parts[1].length() + 1);
+        } else if(msg.startsWith("INCOMING_BUDDYREQ")){     //If a user is requesting to be a buddy
+            String requestersUsername = msg.split(" ")[1];  //Get the requesters username
+
             SwingUtilities.invokeLater(new Runnable(){
                 public void run(){
-                    buddyFrame.sendMessage(buddyUsername, chatMsg);
+                    int option = JOptionPane.showConfirmDialog(null, "Accept " + requestersUsername, "Incoming Buddy Request", JOptionPane.YES_NO_OPTION);  //Open joptionpane to get yes or no answer
+                    if(option == JOptionPane.YES_OPTION){
+                        send("BUDDYREQ_ACCEPT " + requestersUsername);
+                    } else {
+                        send("BUDDYREQ_DENY " + requestersUsername);
+                    }
                 }
             });
-        } else if(msg.startsWith("BUDDY_STATUS")){
-            String[] parts = msg.split(" ");
-            String username = parts[1];
-            boolean online = Boolean.parseBoolean(parts[2]);
-
-            for(int i = 0; i < buddyFrame.buddyModel.size(); i++){
-                if(buddyFrame.buddyModel.get(i).username.equals(username)){
-                    buddyFrame.buddyModel.set(i, new Buddy(username, online));
-                }
-            }
-        } else if(msg.startsWith("ASK_FILE_REQUEST")){
-            String[] parts = msg.split(" ");
-            String fromUsername = parts[1];
-            String fileName = parts[2];
-            String fileLength = parts[3];
-            String question = "Accept " + fileName + " from " + fromUsername + "?" + " File size: " + fileLength;
-            int confirmation = JOptionPane.showConfirmDialog(null, question);
             
-            if(confirmation == JOptionPane.YES_OPTION){
-                send("ACCEPTED_FILE_REQUEST " + fromUsername);  //Tell the server we accepted the file send request
-                try {
-                    FileTransferServer fts = new FileTransferServer(Long.parseLong(fileLength), fileName);
-                } catch (IOException io){
-                    JOptionPane.showMessageDialog(null, "Error receiving file...");
+        } else if(msg.startsWith("BUDDYREQ_ERROR_BNE")) {   //If the user doesn't exist (Buddy Not Exist)
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    JOptionPane.showMessageDialog(null, "User doesn't exist...");
                 }
-            } else {
-                send("DENIED_FILE_REQUEST " + fromUsername);
+            });
+
+        }else if(msg.startsWith("INCOMING_MSG")){       //INCOMING MESSAGE
+            String[] parts = msg.split(" ");            //Get the parts
+            String buddyUsername = parts[1];                    //Get the username that sent it
+            String chatMsg = msg.substring(parts[0].length() + parts[1].length() + 1);  //Get the actual message
+
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    buddyFrame.receiveMessage(buddyUsername, chatMsg);      //Receive message in  buddyframe
+                }
+            });
+
+        } else if(msg.startsWith("BUDDY_STATUS")){      //Buddy status update
+            String[] parts = msg.split(" ");            //Get the parts
+            String buddyName = parts[1];                        //Get the buddy username
+            boolean online = Boolean.parseBoolean(parts[2]);    //Get if they are online
+
+            for(int i = 0; i < buddyFrame.buddyModel.size(); i++){  //Go through all of our friends
+                if(buddyFrame.buddyModel.get(i).username.equals(buddyName)){    //If we found the buddy
+                    buddyFrame.buddyModel.set(i, new Buddy(buddyName, online)); //set him to a new buddy (online/offline)
+                }
             }
+
+        } else if(msg.startsWith("ASK_FILE_REQUEST")){  //When a user receives a file send request
+            String[] parts = msg.split(" ");            //Get the parts
+            String fromUsername = parts[1];                     //Get the username who is sending the file
+            String fileName = parts[2];                         //Get the file name
+            String fileLength = parts[3];                       //Get the size of the file in bytes
+            String question = "Accept " + fileName + " from " + fromUsername + "?" + " File size: " + fileLength + " bytes";
+
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    int confirmation = JOptionPane.showConfirmDialog(null, question);
+            
+                    if(confirmation == JOptionPane.YES_OPTION){
+                        send("ACCEPTED_FILE_REQUEST " + fromUsername);  //Tell the server we accepted the file send request
+                        try {
+                            FileTransferServer fts = new FileTransferServer(Long.parseLong(fileLength), fileName);
+                        } catch (IOException io){
+                            SwingUtilities.invokeLater(new Runnable(){
+                                public void run(){
+                                    JOptionPane.showMessageDialog(null, "Error receiving file...");
+                                }
+                            });
+                        }
+                    } else {
+                        send("DENIED_FILE_REQUEST " + fromUsername);
+                    }        
+                }
+            });
+            
         } else if(msg.startsWith("START_FILE_TRANSFER")){
             String[] parts = msg.split(" ");
             String toUser = parts[1];
@@ -142,7 +163,11 @@ public class ConnectionToServer implements Runnable {
         }
 
         else if(msg.startsWith("FILE_SEND_ERROR_UO")){
-            JOptionPane.showMessageDialog(null, "User offline. Cannot send file.");
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run(){
+                    JOptionPane.showMessageDialog(null, "User offline. Cannot send file.");
+                }
+            });
         }
 
         else if(msg.startsWith("FORCE_LOGOUT")){

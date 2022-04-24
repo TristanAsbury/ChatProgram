@@ -39,8 +39,6 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
     java.util.List<File> files;
     DefaultListModel<String> fileNames;
 
-    
-
     public ChatBox(String buddyName, ConnectionToServer cts){
         this.buddyName = buddyName;
         this.cts = cts;
@@ -49,7 +47,10 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
 
         sendButton = new JButton("Send");
         sendButton.addActionListener(this);
+        sendButton.setEnabled(false);
+
         inputField = new JTextField(40);
+        inputField.getDocument().addDocumentListener(this);
 
         chatPane = new JEditorPane();
         chatPane.setEditable(false);
@@ -75,27 +76,31 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == sendButton){
             cts.send("OUTGOING_MSG " + buddyName + " " + inputField.getText());
-            addText(inputField.getText(), 1);
+            addText(buddyName, inputField.getText(), 1);
+            inputField.setText("");
+            inputField.requestFocus();
         }
     }
 
-    public void insertUpdate(DocumentEvent e){
-
-    }
-
-    public void changedUpdate(DocumentEvent e){
-
+    public void insertUpdate(DocumentEvent e){ 
+        if(e.getDocument() == inputField.getDocument()){
+            sendButton.setEnabled(!(inputField.getText().trim().equals("") || inputField.getText().length() <= 0));
+        }
     }
 
     public void removeUpdate(DocumentEvent e){
-
+        if(e.getDocument() == inputField.getDocument()){
+            sendButton.setEnabled(!(inputField.getText().trim().equals("") || inputField.getText().length() <= 0));
+        }
     }
+    
+    public void changedUpdate(DocumentEvent e){ }
 
     public boolean isClosed(){
         return this.isClosed;
     }
 
-    public void addText(String txt, int side){
+    public void addText(String buddyName, String txt, int side){
         HTMLDocument doc;
         Element html;
         Element body;
@@ -107,9 +112,9 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
         try {
             String htmlText = "";
             if(side == 0){
-                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; font-weight: bold; color: orange;\" align=\"left\">" + txt + "</p></div>";
+                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; color: orange;\" align=\"left\">" + buddyName + ": " + txt + "</p></div>";
             } else {
-                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; font-weight: bold; color: blue;\" align=\"right\">" + txt + "</p></div>";
+                htmlText = "<div><p style=\"font-family: sans-serif; position: absolute; font-weight: bold; color: blue;\" align=\"right\">" + txt + " :You</p></div>";
             }
             doc.insertBeforeEnd(body, htmlText);
             chatPane.setCaretPosition(chatPane.getDocument().getLength());
@@ -117,17 +122,6 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
             System.out.println("Problem adding text to pane!");
         }
     }
-
-    private void setupDialog(){
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        Dimension d = tk.getScreenSize();
-        setSize(600, 400);
-        setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
-        setTitle(buddyName);
-        setVisible(true);
-    }
-
 
     public void dragEnter(DropTargetDragEvent dtde) {
         chatPane.setBackground(new Color(123,123,123));
@@ -141,9 +135,6 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
 
 
     public void dropActionChanged(DropTargetDragEvent dtde) { }
-
-
-    
 
     public void drop(DropTargetDropEvent dtde) {
         chatPane.setBackground(new Color(255, 255, 255));
@@ -181,28 +172,40 @@ class ChatBox extends JDialog implements ActionListener, DocumentListener, DropT
             
             byte[] buffer = new byte[128];                              //Create empty buffer;
 
-            File file = files.get(0);
+            File file = files.get(0);                               //get the file
 
-            InputStream fis = new FileInputStream(files.get(0));
-            OutputStream os = outSocket.getOutputStream();
+            InputStream fis = new FileInputStream(files.get(0));    //Create the file input stream (take in file)
+            OutputStream os = outSocket.getOutputStream();                  //Get the output stream
 
-            long totalFileSize = file.length();
-            int numBytesRead = fis.read(buffer);
-            long totalBytesRead = numBytesRead;
-            os.write(buffer, 0, numBytesRead);
+            long totalFileSize = file.length();                 //Get the filesize
+            int numBytesRead = fis.read(buffer);                //Get the number of bytes read
+            long totalBytesRead = numBytesRead;                 //Create the total bytes read
+            os.write(buffer, 0, numBytesRead);              //Write those bytes
             
             do {
-                numBytesRead = fis.read(buffer);
-                totalBytesRead += numBytesRead;
-                os.write(buffer, 0, numBytesRead);                //Write to file
-            } while (totalBytesRead < totalFileSize);
+                numBytesRead = fis.read(buffer);                //Read bytes
+                totalBytesRead += numBytesRead;                 //Add those bytes
+                os.write(buffer, 0, numBytesRead);         //Write to file
+            } while (totalBytesRead < totalFileSize);           //Do this while we still have bytes to read
 
-            System.out.println("Done sending file");
-            fis.close();
-            os.close();
-            outSocket.close();
+            System.out.println("Done sending file");        //
+            
+            os.close();             //Close the output stream
+            fis.close();            //Close the file stream
+            outSocket.close();      //Close the socket
         } catch (IOException io){
 
         }
+    }
+
+    private void setupDialog(){
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        Dimension d = tk.getScreenSize();
+        setSize(600, 400);
+        setLocation((int)d.getWidth()/2, (int)d.getHeight()/2);
+        setTitle(buddyName);
+        setVisible(true);
+        setResizable(false);
     }
 }

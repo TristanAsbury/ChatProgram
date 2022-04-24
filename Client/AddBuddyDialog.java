@@ -81,8 +81,7 @@ public class AddBuddyDialog extends JDialog implements DocumentListener, ActionL
 
 
     public void insertUpdate(DocumentEvent e){
-        //If the username or password fields are changed, check if they are valid
-        if(e.getDocument() == usernameField.getDocument()){
+        if(e.getDocument() == usernameField.getDocument()){                 //If the username or password fields are changed, check if they are valid
             sendButton.setEnabled(!usernameField.getText().contains(" ")
             && usernameField.getText().trim() != "" 
             && usernameField.getText().trim() != sendersUsername);
@@ -90,8 +89,7 @@ public class AddBuddyDialog extends JDialog implements DocumentListener, ActionL
     }
 
     public void removeUpdate(DocumentEvent e){ 
-        //If the username or password fields are changed, check if they are valid
-        if(e.getDocument() == usernameField.getDocument()){
+        if(e.getDocument() == usernameField.getDocument()){                 //If the username or password fields are changed, check if they are valid
             sendButton.setEnabled(!usernameField.getText().contains(" ")
             && usernameField.getText().trim() != "" 
             && usernameField.getText().trim() != sendersUsername);

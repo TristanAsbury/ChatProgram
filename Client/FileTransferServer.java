@@ -10,7 +10,6 @@ import java.net.Socket;
 
 import javax.swing.JOptionPane;
 
-
 public class FileTransferServer implements Runnable {
 
     ServerSocket servSock;
@@ -27,10 +26,9 @@ public class FileTransferServer implements Runnable {
     }
 
     public void run(){
-        Socket inputSocket = new Socket();
-        
+        Socket inputSocket = new Socket();                  //Create a raw socket
         try {
-            inputSocket.setSoTimeout(4000);
+            inputSocket.setSoTimeout(4000);         //Create a timeout incase the sender disconnects
             inputSocket = servSock.accept();
             System.out.println("Accepted socket!");
         } catch (IOException io){            
@@ -42,13 +40,13 @@ public class FileTransferServer implements Runnable {
             byte[] buffer = new byte[128];                              //Create empty buffer
             int numBytesRead = dis.read(buffer);                        //Read bytes into buffer
             long totalBytesRead = (long)numBytesRead;
-            fos.write(buffer, 0, numBytesRead);                     //Write those bytes into the file
+            fos.write(buffer, 0, numBytesRead);                    //Write those bytes into the file
 
             do {
                 numBytesRead = dis.read(buffer);                        //Read bytes in from server
                 totalBytesRead += (long)numBytesRead;
                 fos.write(buffer, 0, numBytesRead);                 //Write to file
-            } while (totalBytesRead < totalFileSize);                     //Keep receiving bytes until we have received all
+            } while (totalBytesRead < totalFileSize);                    //Keep receiving bytes until we have received all
 
             System.out.println("Done receiving file");
 
