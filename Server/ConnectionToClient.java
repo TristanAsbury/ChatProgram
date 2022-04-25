@@ -1,4 +1,4 @@
-package Server;
+// package Server;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -63,6 +63,7 @@ public class ConnectionToClient implements Runnable {
                 if(!server.userExists(usernameInput)){   //If the user doesn't exist, we're good
                     this.username = usernameInput;      //set CTC username to the username
                     server.addUser(usernameInput, passwordInput, this); //Add the user to server users
+                    server.userStatusChange(username, true);
                     send("REGISTER_SUCCESS");
                 } else {                                //If the user does exist, however, then we must send a message back and wait
                     send("REGISTER_ERROR_UE");      //Sends register error "user exists"
@@ -126,7 +127,8 @@ public class ConnectionToClient implements Runnable {
 
         } else if (msg.startsWith("LOGOUT")){                   //If the user logs out
             server.userStatusChange(username, false);           //Send the status change to all their buddies
-
+            ctcs.remove(this);
+            receiving = false;
         } else if (msg.startsWith("FILE_SEND_REQUEST")){        //If the user wants to send a file
             String[] parts = msg.split(" ");                    //Get the parts
             

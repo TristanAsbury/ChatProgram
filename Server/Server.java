@@ -1,4 +1,4 @@
-package Server;
+// package Server;
 
 import java.io.*;
 import java.net.*;
@@ -92,6 +92,7 @@ public class Server {
 
     public void addUser(String username, String password, ConnectionToClient ctc){
         User newUser = new User(username, password, ctc);
+        
         users.put(username, newUser);
 
         System.out.println("Num users: " + users.size());

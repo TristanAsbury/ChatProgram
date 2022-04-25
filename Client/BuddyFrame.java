@@ -1,4 +1,4 @@
-package Client;
+// package Client;
 
 import javax.swing.*;
 import javax.swing.JFrame;
@@ -59,7 +59,7 @@ public class BuddyFrame extends JFrame implements ActionListener, MouseListener 
             String addBuddyName = JOptionPane.showInputDialog(null, "Input Buddy Username: "); //Create new add buddy dialog
 
             if(addBuddyName == null || addBuddyName.trim().equals("") || addBuddyName.equals(username)){     //If the name is nothing, or our own name, its bad
-                //Dont do anything
+                JOptionPane.showMessageDialog(null, "Invalid buddy name!", "Invalid Buddy!", JOptionPane.ERROR_MESSAGE); //If so, error
             } else {
                 for(int i = 0; i < buddyModel.size(); i++){              //Go through all buddies
                     if(addBuddyName.equals(buddyModel.get(i).username)){ //Is this buddy the buddy we are gonna add

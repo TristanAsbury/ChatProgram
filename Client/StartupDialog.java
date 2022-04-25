@@ -1,4 +1,4 @@
-package Client;
+// package Client;
 
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
